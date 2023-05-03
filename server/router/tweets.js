@@ -1,6 +1,17 @@
 import express from "express";
 import * as tweetController from '../controller/tweet.js';
+import { body } from 'express-validator';
+import { validate } from "../middelware/validator.js";
+
 const router = express.Router();
+
+const validateTweet = [
+    body('text')
+        .trim()
+        .isLength({min : 4})
+        .withMessage('text는 최소 4글자 이상 입력하세요!'),
+    validate
+];
 
 // GET
 // /tweets?username=:username
@@ -10,13 +21,14 @@ router.get('/', tweetController.getTweets);
 // /tweets/:id
 router.get('/:id', tweetController.getTweet);
 
+// text가 4자 이하인 경우 에러처리
 //POST
 // id: Date.now().toString()
-router.post('/', tweetController.CreateTweet);
+router.post('/', validateTweet, tweetController.CreateTweet);
 
 // PUT
 // text만 수정
-router.put('/:id', tweetController.UpdateTweet);
+router.put('/:id', validateTweet, tweetController.UpdateTweet);
 
 // DELETE
 router.delete('/:id', tweetController.deleteTweet);

@@ -7,11 +7,14 @@ import TweetService from './service/tweet';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AuthErrorEventBus } from './context/AuthContext';
+import HttpClient from './network/http';
 
 const baseURL = process.env.REACT_APP_BASE_URL;
+// .env에서 읽어옴 : http://localhost:8080
 const authErrorEventBus = new AuthErrorEventBus();
 const authService = new AuthService();
-const tweetService = new TweetService(baseURL);
+const httpClient = new HttpClient(baseURL);
+const tweetService = new TweetService(httpClient);
 
 ReactDOM.render(
   <React.StrictMode>
