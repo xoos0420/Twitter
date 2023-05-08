@@ -10,7 +10,7 @@ export async function getTweets(req, res) {
 
 export async function getTweet(req, res, next) {
     const id = req.params.id;
-    const tweet = await tweetRepository.getAllByID(id);
+    const tweet = await tweetRepository.getById(id);
     if(tweet){
         res.status(200).json(tweet);
     }else{
@@ -19,24 +19,35 @@ export async function getTweet(req, res, next) {
 };
 
 export async function CreateTweet(req, res, next) {
-    const { text, name, username } = req.body;
-    const tweet = await tweetRepository.create(text, name, username);
+    const { text } = req.body;
+    const tweet = await tweetRepository.create(text, req.userId);
     res.status(201).json(tweet);
 };
 
 export async function UpdateTweet(req, res, next) {
     const id = req.params.id;
     const text = req.body.text;
-    const tweet = await tweetRepository.update(id, text);
-    if(tweet){
-        res.status(200).json(tweet);
-    }else{
-        res.status(404).json({ message: `Tweet id(${id}) not found`}); 
+    const tweet = await tweetRepository.getById(id);
+    // update 와 delete 에 특정토큰만 접근가능하게 만들기
+    if (!tweet) {
+        res.status(404).json({ message: `tweet id(${id})not found` })
     }
-};
+    if (tweet.userId !== req.userId) {
+        return res.sendStatus(403);
+    }
+    const updated = await tweetRepository.update(id,text);
+    res.status(200).json(updated);
+}
 
 export async function deleteTweet(req, res, next) {
     const id = req.params.id;
+    const tweet = await tweetRepository.getById(id);
+    if(!tweet){
+        res.status(404).json({ message: `Tweet id(${id}) not found`});
+    }
+    if(tweet.userId !== req.userId) {
+        return res.sendStatus(403);
+    }
     await tweetRepository.remove(id);
     res.sendStatus(204);
 };
