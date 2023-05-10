@@ -7,18 +7,18 @@ import TweetService from './service/tweet';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AuthErrorEventBus } from './context/AuthContext';
-// 추가된 import
 import HttpClient from './network/http';
-import TokenStroage from './db/token.js';
-// .env에서 읽어옴 : http://localhost:8080
+import TokenStorage from './db/token';
+import Socket from './network/socket';
+
 const baseURL = process.env.REACT_APP_BASE_URL;
-// 추가된 변수
-const httpClient = new HttpClient(baseURL)
-const tokenStroage = new TokenStroage();
+const tokenStorage = new TokenStorage();
+const httpClient = new HttpClient(baseURL);
 const authErrorEventBus = new AuthErrorEventBus();
-const authService = new AuthService(httpClient, tokenStroage);
-// Tweetservice 경로를 변경해줌
-const tweetService = new TweetService(httpClient, tokenStroage);
+const authService = new AuthService(httpClient, tokenStorage);
+const socketClient = new Socket(baseURL, () => tokenStorage.getToken());
+const tweetService = new TweetService(httpClient, tokenStorage, socketClient);
+
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
